@@ -1,1 +1,1 @@
-## Behavior knob to Construct2
+## Knob behavior to Construct2
