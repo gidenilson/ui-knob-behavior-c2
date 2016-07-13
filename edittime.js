@@ -1,15 +1,15 @@
-﻿function GetBehaviorSettings()
+function GetBehaviorSettings()
 {
 	return {
-		"name":			"MyBehavior",			// as appears in 'add behavior' dialog, can be changed as long as "id" stays the same
-		"id":			"MyBehavior",			// this is used to identify this behavior and is saved to the project; never change it
+		"name":			"UI Knob",			// as appears in 'add behavior' dialog, can be changed as long as "id" stays the same
+		"id":			"UIKnob",			// this is used to identify this behavior and is saved to the project; never change it
 		"version":		"1.0",					// (float in x.y format) Behavior version - C2 shows compatibility warnings based on this
-		"description":	"<appears at the bottom of the add behavior dialog>",
-		"author":		"<your name/organisation>",
-		"help url":		"<your website or a manual entry on Scirra.com>",
+		"description":	"Knob behavior object.",
+		"author":		"Gidenilson Alves Santiago<gidenilson@gmail.com>",
+		"help url":		"",
 		"category":		"General",				// Prefer to re-use existing categories, but you can set anything here
 		"flags":		0						// uncomment lines to enable flags...
-					//	| bf_onlyone			// can only be added once to an object, e.g. solid
+						| bf_onlyone			// can only be added once to an object, e.g. solid
 	};
 };
 
@@ -40,7 +40,7 @@
 //				script_name);		// corresponding runtime function name
 				
 // example				
-AddCondition(0, cf_none, "Is moving", "My category", "{my} is moving", "Description for my condition!", "IsMoving");
+AddCondition(0, cf_none, "Is changing", "UI", "{my} is changing", "Object changing", "IsChanging");
 
 ////////////////////////////////////////
 // Actions
@@ -54,7 +54,7 @@ AddCondition(0, cf_none, "Is moving", "My category", "{my} is moving", "Descript
 //			 script_name);		// corresponding runtime function name
 
 // example
-AddAction(0, af_none, "Stop", "My category", "Stop {my}", "Description for my action!", "Stop");
+//AddAction(0, af_none, "Stop", "My category", "Stop {my}", "Description for my action!", "Stop");
 
 ////////////////////////////////////////
 // Expressions
@@ -68,7 +68,7 @@ AddAction(0, af_none, "Stop", "My category", "Stop {my}", "Description for my ac
 //				 description);	// description in expressions panel
 
 // example
-AddExpression(0, ef_return_number, "Leet expression", "My category", "MyExpression", "Return the number 1337.");
+AddExpression(0, ef_return_number, "Knob value", "UI", "Value", "Return the current value.");
 
 ////////////////////////////////////////
 ACESDone();
@@ -81,7 +81,7 @@ ACESDone();
 // new cr.Property(ept_combo,		name,	"Item 1",		description, "Item 1|Item 2|Item 3")	// a dropdown list (initial_value is string of initially selected item)
 
 var property_list = [
-	new cr.Property(ept_integer, 	"My property",		77,		"An example property.")
+	new cr.Property(ept_integer, 	"Range",		360,		"Max rotate angle (0º <-> 360º)")
 	];
 	
 // Called by IDE when a new behavior type is to be created
