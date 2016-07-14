@@ -134,26 +134,48 @@ cr.behaviors.UIKnob = function (runtime) {
     //                               vvvvvvvvvv
     var behaviorProto = cr.behaviors.UIKnob.prototype;
 
-    behaviorProto.calcAngle = function (a, b) {
-        var angle, PI = Math.PI;
 
-
+    var round = function (n) {
+        return Math.round(n * 100) / 100;
+    };
+    var calcAngle = function (x, y, inst) {
+        var a, b, angle, PI = Math.PI;
+        a = inst.y - y;
+        b = inst.x - x;
 
         angle = Math.atan(a / b);
-        
-        
 
         if (a > 0 && b < 0) {
-            
             angle += PI;
         }
         if (a <= 0 && b < 0) {
             angle += PI;
         }
         if (a < 0 && b >= 0) {
-            angle += (2 * PI);
+            angle += 2 * PI;
         }
-        return angle;
+
+        return cr.to_degrees(angle);
+
+    };
+
+    var normalizeDiff = function (inst) {
+        var sum = inst.relativeAngle + inst.diffAngle;
+
+
+        if (inst.diffAngle < 0 && sum < 0) {
+            inst.diffAngle = 0;
+        }
+        if (inst.diffAngle > 0 && sum > inst.range) {
+            inst.diffAngle = 0;
+
+        }
+
+
+    };
+    
+    var calcValue = function (inst){
+        inst.value = (inst.relativeAngle / inst.range) * 100;
     };
 
     var dummyoffset = {
@@ -326,7 +348,7 @@ cr.behaviors.UIKnob = function (runtime) {
             inst = arr[i];
             b = GetUIKnobBehavior(inst);
 
-            if ( !b.dragging || (b.dragging && b.dragsource !== src))
+            if (!b.dragging || (b.dragging && b.dragsource !== src))
                 continue; // don't consider disabled, not-dragging, or dragging by other sources
 
             lx = inst.layer.canvasToLayer(x, y, true);
@@ -375,14 +397,19 @@ cr.behaviors.UIKnob = function (runtime) {
 
     behinstProto.onCreate = function () {
         // Load properties
-        this.range = this.properties[0];
+        this.range = cr.clamp_angle_degrees(this.properties[0]);
         this.lastAngle = 0;
         this.diffAngle = 0;
         this.currentAngle = 0;
+        this.initAngle = cr.to_clamped_degrees(this.inst.angle);
+        this.angle = 0;
+        this.value = 0;
+        this.relativeAngle = 0;
         this.dragging = false;
         this.dx = 0;
         this.dy = 0;
         this.dragsource = "<none>";
+
 
         // 0 = both, 1 = horizontal, 2 = vertical
         //this.axes = this.properties[0];
@@ -390,8 +417,7 @@ cr.behaviors.UIKnob = function (runtime) {
     };
 
     behinstProto.onDown = function (src, x, y) {
-        var a = y - this.inst.y;
-        var b = x - this.inst.x;
+
         this.dx = x - this.inst.x;
         this.dy = y - this.inst.y;
         this.dragging = true;
@@ -402,34 +428,33 @@ cr.behaviors.UIKnob = function (runtime) {
         this.runtime.trigger(cr.behaviors.UIKnob.prototype.cnds.OnDragStart, this.inst);
         this.runtime.isInUserInputEvent = false;
 
-        this.lastAngle = behaviorProto.calcAngle(a, b);
+        this.lastAngle = calcAngle(x, y, this.inst);
         this.currentAngle = this.lastAngle;
 
 
     };
 
     behinstProto.onMove = function (x, y) {
-        var a = y - this.inst.y;
-        var b = x - this.inst.x;
 
 
-
-
-        this.currentAngle = behaviorProto.calcAngle(a, b);
+        this.currentAngle = calcAngle(x, y, this.inst);
         this.diffAngle = this.currentAngle - this.lastAngle;
-        this.inst.angle += this.diffAngle;
-        this.lastAngle = this.currentAngle;
-        
+        normalizeDiff(this);
 
+        this.angle = cr.to_clamped_degrees(this.inst.angle) + this.diffAngle;
+
+        this.inst.angle = cr.to_radians(this.angle);
         this.inst.set_bbox_changed();
-        console.log("a:" + Math.round(a*100)/100, "b:" + Math.round(b*100)/100, "ang:" + Math.round(this.inst.angle*100)/100);
-
+        this.lastAngle = this.currentAngle;
+        this.relativeAngle = cr.clamp_angle_degrees(this.angle - this.initAngle);
+        
+        calcValue(this);
 
     };
 
     behinstProto.onUp = function () {
         this.dragging = false;
-
+        console.log("onUp");
         // Trigger 'On drop'
         this.runtime.isInUserInputEvent = true;
         this.runtime.trigger(cr.behaviors.UIKnob.prototype.cnds.OnDrop, this.inst);
@@ -488,8 +513,28 @@ cr.behaviors.UIKnob = function (runtime) {
 				//									 as HTML strings rather than simple plain text
 				// "readonly" (optional, default false): set to true to disable editing the property
                 {
-                    "name": "My property",
-                    "value": this.myProperty
+                    "name": "currentAngle",
+                    "value": this.currentAngle
+                },
+                {
+                    "name": "lastAngle",
+                    "value": this.lastAngle
+                },
+                {
+                    "name": "diffAngle",
+                    "value": this.diffAngle
+                },
+                {
+                    "name": "initAngle",
+                    "value": this.initAngle
+                },
+                {
+                    "name": "relativeAngle",
+                    "value": this.relativeAngle
+                },
+                {
+                    "name": "value",
+                    "value": this.value
                 }
 			]
         });
@@ -545,8 +590,8 @@ cr.behaviors.UIKnob = function (runtime) {
     // the example expression
     Exps.prototype.Value = function (ret) // 'ret' must always be the first parameter - always return the expression's result through it!
         {
-            ret.set_int(1337); // return our value
-            // ret.set_float(0.5);			// for returning floats
+            //ret.set_int(1337); // return our value
+             ret.set_float(calcValue(this));			// for returning floats
             // ret.set_string("Hello");		// for ef_return_string
             // ret.set_any("woo");			// for ef_return_any, accepts either a number or string
         };
