@@ -425,6 +425,8 @@ cr.behaviors.UIKnob = function (runtime) {
         this.dragsource = "<none>";
         
         initAngle(this);
+        
+        
 
 
         // 0 = both, 1 = horizontal, 2 = vertical
@@ -438,7 +440,7 @@ cr.behaviors.UIKnob = function (runtime) {
         this.dy = y - this.inst.y;
         this.dragging = true;
         this.dragsource = src;
-
+        
         // Trigger 'On drag start'
         this.runtime.isInUserInputEvent = true;
         this.runtime.trigger(cr.behaviors.UIKnob.prototype.cnds.OnDragStart, this.inst);
@@ -446,6 +448,7 @@ cr.behaviors.UIKnob = function (runtime) {
 
         this.lastAngle = calcAngle(x, y, this.inst);
         this.currentAngle = this.lastAngle;
+        
 
 
     };
@@ -464,6 +467,7 @@ cr.behaviors.UIKnob = function (runtime) {
         this.lastAngle = this.currentAngle;
         this.relativeAngle = cr.clamp_angle_degrees(this.angle - this.initAngle);
         calcValue(this);
+        
         
         
 
@@ -607,8 +611,9 @@ cr.behaviors.UIKnob = function (runtime) {
     // the example expression
     Exps.prototype.Value = function (ret) // 'ret' must always be the first parameter - always return the expression's result through it!
         {
-            //ret.set_int(1337); // return our value
-             ret.set_float(calcValue(this));			// for returning floats
+           
+        //ret.set_int(1337); // return our value
+             ret.set_float(this.value);			// for returning floats
             // ret.set_string("Hello");		// for ef_return_string
             // ret.set_any("woo");			// for ef_return_any, accepts either a number or string
         };
