@@ -175,8 +175,19 @@ cr.behaviors.UIKnob = function (runtime) {
     };
     
     var calcValue = function (inst){
-        inst.value = (inst.relativeAngle / inst.range) * 100;
+        var percent = (inst.relativeAngle / inst.range);
+        var middle = (inst.min + inst.max) /2;
+        var range = inst.max - inst.min;
+        inst.value = (range * percent) + inst.min;
     };
+    var initAngle = function (inst){
+        var range = (inst.max - inst.min);
+        var percent = (inst.value - inst.min) / range;
+        var angle = inst.range * percent;
+        inst.inst.angle = cr.to_radians(angle);
+        inst.inst.set_bbox_changed();
+    };
+
 
     var dummyoffset = {
         left: 0,
@@ -398,17 +409,22 @@ cr.behaviors.UIKnob = function (runtime) {
     behinstProto.onCreate = function () {
         // Load properties
         this.range = cr.clamp_angle_degrees(this.properties[0]);
+        this.min = this.properties[1];
+        this.max = this.properties[2];
+        this.value =this.properties[3];
         this.lastAngle = 0;
         this.diffAngle = 0;
         this.currentAngle = 0;
         this.initAngle = cr.to_clamped_degrees(this.inst.angle);
         this.angle = 0;
-        this.value = 0;
+        
         this.relativeAngle = 0;
         this.dragging = false;
         this.dx = 0;
         this.dy = 0;
         this.dragsource = "<none>";
+        
+        initAngle(this);
 
 
         // 0 = both, 1 = horizontal, 2 = vertical
@@ -447,14 +463,15 @@ cr.behaviors.UIKnob = function (runtime) {
         this.inst.set_bbox_changed();
         this.lastAngle = this.currentAngle;
         this.relativeAngle = cr.clamp_angle_degrees(this.angle - this.initAngle);
-        
         calcValue(this);
+        
+        
 
     };
 
     behinstProto.onUp = function () {
         this.dragging = false;
-        console.log("onUp");
+        //console.log("onUp");
         // Trigger 'On drop'
         this.runtime.isInUserInputEvent = true;
         this.runtime.trigger(cr.behaviors.UIKnob.prototype.cnds.OnDrop, this.inst);

@@ -81,7 +81,10 @@ ACESDone();
 // new cr.Property(ept_combo,		name,	"Item 1",		description, "Item 1|Item 2|Item 3")	// a dropdown list (initial_value is string of initially selected item)
 
 var property_list = [
-	new cr.Property(ept_integer, 	"Range",		360,		"Max rotate angle (0º <-> 360º)")
+	new cr.Property(ept_integer, "Range", 360, "Max rotate angle (0º <-> 360º)"),
+    new cr.Property(ept_float, "Min", 0, "Minimum value"),
+    new cr.Property(ept_float, "Max", 0, "maximum value"),
+    new cr.Property(ept_float, "Value", 0, "Initial value")
 	];
 	
 // Called by IDE when a new behavior type is to be created
