@@ -184,7 +184,7 @@ cr.behaviors.UIKnob = function (runtime) {
         var range = (inst.max - inst.min);
         var percent = (inst.value - inst.min) / range;
         var angle = inst.range * percent;
-        inst.inst.angle = cr.to_radians(angle);
+        inst.inst.angle = cr.to_radians(angle + inst.initAngle);
         inst.inst.set_bbox_changed();
     };
 
